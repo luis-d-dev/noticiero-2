@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { uploadPresigned } from "@vercel/blob/client"
+import type { Noticia } from "~/types/noticia"
 
 const { reporter, comprobado, comprobar, salir } = useReporter()
 const credenciales = reactive({ email: "", password: "" })
@@ -8,12 +9,25 @@ const portada = ref<File | null>(null)
 const enviando = ref(false)
 const errorMensaje = ref("")
 const exitoMensaje = ref("")
+const noticiasEditoriales = ref<Array<Noticia & { contenido: string }>>([])
 
 const tamanoMaximoPortada = 10 * 1024 * 1024
 const tamanoObjetivoPortada = 9 * 1024 * 1024
 const dimensionMaximaPortada = 1800
 
-onMounted(comprobar)
+onMounted(async () => {
+  await comprobar()
+  if (reporter.value?.role === "editor") await cargarNoticiasEditoriales()
+})
+
+async function cargarNoticiasEditoriales() {
+  try {
+    const noticias = await $fetch<Noticia[]>("/api/editor/noticias")
+    noticiasEditoriales.value = noticias.map(noticia => ({ ...noticia, contenido: noticia.contenido || "" }))
+  } catch (error) {
+    errorMensaje.value = mensajeDeError(error)
+  }
+}
 
 function seleccionarPortada(evento: Event) {
   const input = evento.target as HTMLInputElement
@@ -89,6 +103,7 @@ async function ingresar() {
     })
     reporter.value = respuesta.user
     credenciales.password = ""
+    if (reporter.value?.role === "editor") await cargarNoticiasEditoriales()
   } catch (error) {
     errorMensaje.value = mensajeDeError(error)
   } finally {
@@ -122,20 +137,36 @@ async function publicar() {
       clientPayload: JSON.stringify({ titulo: formulario.titulo })
     })
 
-    const tieneContenido = Boolean(formulario.contenido.trim())
-    const noticia = await $fetch<{ slug: string }>("/api/noticias", {
+    await $fetch<{ slug: string }>("/api/noticias", {
       method: "POST",
       body: { ...formulario, imagenUrl: blob.url }
     })
 
     exitoMensaje.value = resultadoPortada.optimizada
-      ? "La portada fue optimizada automáticamente y la noticia se publicó correctamente."
-      : "La noticia fue publicada correctamente."
+      ? "La portada fue optimizada y la noticia se envió para aprobación editorial."
+      : "La noticia se envió para aprobación editorial."
     Object.assign(formulario, { titulo: "", resumen: "", contenido: "", categoria: "Comunidad" })
     portada.value = null
     const input = document.querySelector<HTMLInputElement>("#portada")
     if (input) input.value = ""
-    await navigateTo(tieneContenido ? `/noticias/${noticia.slug}` : "/")
+  } catch (error) {
+    errorMensaje.value = mensajeDeError(error)
+  } finally {
+    enviando.value = false
+  }
+}
+
+async function guardarEdicion(noticia: Noticia & { contenido: string }) {
+  enviando.value = true
+  errorMensaje.value = ""
+  exitoMensaje.value = ""
+  try {
+    const actualizada = await $fetch<Noticia>(`/api/editor/noticias/${noticia.slug}`, {
+      method: "PATCH",
+      body: { contenido: noticia.contenido, aprobada: noticia.aprobada }
+    })
+    Object.assign(noticia, actualizada, { contenido: actualizada.contenido || "" })
+    exitoMensaje.value = `Se guardaron los cambios de “${noticia.titulo}”.`
   } catch (error) {
     errorMensaje.value = mensajeDeError(error)
   } finally {
@@ -170,7 +201,7 @@ async function publicar() {
         </form>
       </section>
 
-      <section v-else class="publisher">
+      <section v-else-if="reporter.role === 'reporter'" class="publisher">
         <header class="publisher__header">
           <div>
             <p class="eyebrow">Panel de publicación</p>
@@ -206,9 +237,46 @@ async function publicar() {
           <p v-if="errorMensaje" class="form-message form-message--error field-wide" role="alert">{{ errorMensaje }}</p>
           <p v-if="exitoMensaje" class="form-message form-message--success field-wide" role="status">{{ exitoMensaje }}</p>
           <button class="button field-wide" type="submit" :disabled="enviando">
-            {{ enviando ? "Publicando…" : "Publicar noticia" }}
+            {{ enviando ? "Enviando…" : "Enviar a revisión" }}
           </button>
         </form>
+      </section>
+
+      <section v-else class="publisher editor-panel">
+        <header class="publisher__header">
+          <div>
+            <p class="eyebrow">Panel editorial</p>
+            <h1>Revisión de noticias</h1>
+            <p>Hola, {{ reporter.nombre }}. Revisa el contenido antes de aprobarlo.</p>
+          </div>
+          <button class="text-button" type="button" @click="salir">Cerrar sesión</button>
+        </header>
+
+        <p v-if="errorMensaje" class="form-message form-message--error" role="alert">{{ errorMensaje }}</p>
+        <p v-if="exitoMensaje" class="form-message form-message--success" role="status">{{ exitoMensaje }}</p>
+        <p v-if="!noticiasEditoriales.length" class="editor-empty">No hay noticias pendientes de revisión.</p>
+
+        <article v-for="noticia in noticiasEditoriales" :key="noticia._id" class="editor-card">
+          <div class="editor-card__heading">
+            <div>
+              <p class="eyebrow">{{ noticia.categoria }} · {{ noticia.autorNombre }}</p>
+              <h2>{{ noticia.titulo }}</h2>
+              <p>{{ noticia.resumen }}</p>
+            </div>
+            <img :src="noticia.imagenUrl" :alt="`Portada de ${noticia.titulo}`">
+          </div>
+          <label>
+            Contenido (opcional)
+            <textarea v-model.trim="noticia.contenido" rows="8" minlength="30" maxlength="20000"></textarea>
+          </label>
+          <label class="approval-field">
+            <input v-model="noticia.aprobada" type="checkbox">
+            Aprobada y visible públicamente
+          </label>
+          <button class="button" type="button" :disabled="enviando" @click="guardarEdicion(noticia)">
+            {{ enviando ? "Guardando…" : "Guardar revisión" }}
+          </button>
+        </article>
       </section>
     </main>
   </div>

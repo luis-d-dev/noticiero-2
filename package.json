@@ -8,7 +8,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "seed": "node scripts/seed.mjs",
-    "reporter:create": "node scripts/create-reporter.mjs"
+    "reporter:create": "node scripts/create-reporter.mjs",
+    "editor:create": "node scripts/create-editor.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",

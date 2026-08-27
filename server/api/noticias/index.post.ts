@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
   const db = await getDb()
   const collection = db.collection("news")
   await collection.createIndex({ slug: 1 }, { unique: true })
-  await collection.createIndex({ estado: 1, publicadaEn: -1 })
+  await collection.createIndex({ estado: 1, aprobada: 1, publicadaEn: -1 })
 
   const baseSlug = slugify(titulo) || "noticia"
   let slug = baseSlug
@@ -55,6 +55,7 @@ export default defineEventHandler(async (event) => {
     categoria,
     autorId: reporter.id,
     autorNombre: reporter.nombre,
+    aprobada: false,
     estado: "publicada",
     publicadaEn: now,
     creadaEn: now,

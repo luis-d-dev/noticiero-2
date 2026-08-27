@@ -40,6 +40,16 @@ La contraseña debe tener al menos 6 caracteres.
 
 Después, el reportero ingresa en `/reporteros`. Las contraseñas se almacenan con `scrypt`; la sesión se guarda en una cookie `HttpOnly`, `SameSite=Strict` y firmada.
 
+## Crear editores
+
+El administrador crea o actualiza editores con:
+
+```bash
+npm run editor:create -- "Nombre Apellido" "editor@ejemplo.com" "una-contraseña-segura"
+```
+
+Los editores ingresan en `/reporteros`, donde pueden modificar el contenido, aprobar noticias o retirar su aprobación. Las noticias nuevas de los reporteros comienzan sin aprobar y no son visibles públicamente hasta que un editor las aprueba.
+
 ## Desplegar en Vercel
 
 1. Sube la carpeta `noticiero_2` a un repositorio o selecciónala como **Root Directory** del proyecto en Vercel.
@@ -57,5 +67,5 @@ Las imágenes nuevas se envían directamente del navegador a Vercel Blob usando 
 
 ## Colecciones de MongoDB
 
-- `news`: título, slug, resumen, contenido opcional, portada, categoría, autor, estado y fechas. Sin contenido, la noticia funciona únicamente como portada y no tiene página de detalle.
-- `users`: nombre, correo único, hash de contraseña, rol, estado y fechas.
+- `news`: título, slug, resumen, contenido opcional, portada, categoría, autor, aprobación, estado y fechas. Sin contenido, la noticia funciona únicamente como portada y no tiene página de detalle. Solo los documentos con `aprobada: true` son públicos.
+- `users`: nombre, correo único, hash de contraseña, rol (`reporter` o `editor`), estado y fechas.

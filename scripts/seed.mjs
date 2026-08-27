@@ -33,13 +33,13 @@ try {
   const db = client.db(process.env.NUXT_MONGODB_DB || "noticiero_maesvida")
   const news = db.collection("news")
   await news.createIndex({ slug: 1 }, { unique: true })
-  await news.createIndex({ estado: 1, publicadaEn: -1 })
+  await news.createIndex({ estado: 1, aprobada: 1, publicadaEn: -1 })
   const now = new Date()
   for (const noticia of noticias) {
     await news.updateOne(
       { slug: noticia.slug },
       {
-        $set: { ...noticia, categoria: "Comunidad", autorNombre: "Noticiero Maesvida", estado: "publicada", actualizadaEn: now },
+        $set: { ...noticia, categoria: "Comunidad", autorNombre: "Noticiero Maesvida", estado: "publicada", aprobada: true, actualizadaEn: now },
         $setOnInsert: { creadaEn: now, publicadaEn: now }
       },
       { upsert: true }

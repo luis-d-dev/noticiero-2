@@ -8,7 +8,7 @@ export interface SessionUser {
   id: string
   nombre: string
   email: string
-  role: "reporter"
+  role: "reporter" | "editor"
 }
 
 interface SessionPayload extends SessionUser {
@@ -55,7 +55,7 @@ export function getSession(event: H3Event): SessionUser | null {
     if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null
 
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString()) as SessionPayload
-    if (payload.exp <= Math.floor(Date.now() / 1000) || payload.role !== "reporter") return null
+    if (payload.exp <= Math.floor(Date.now() / 1000) || !["reporter", "editor"].includes(payload.role)) return null
     return { id: payload.id, nombre: payload.nombre, email: payload.email, role: payload.role }
   } catch {
     return null
@@ -64,7 +64,21 @@ export function getSession(event: H3Event): SessionUser | null {
 
 export function requireReporter(event: H3Event) {
   const user = getSession(event)
-  if (!user) throw createError({ statusCode: 401, statusMessage: "Debes iniciar sesión como reportero." })
+  if (!user) throw createError({ statusCode: 401, statusMessage: "Debes iniciar sesión." })
+  if (user.role !== "reporter") throw createError({ statusCode: 403, statusMessage: "Esta acción es exclusiva para reporteros." })
+  return user
+}
+
+export function requireEditor(event: H3Event) {
+  const user = getSession(event)
+  if (!user) throw createError({ statusCode: 401, statusMessage: "Debes iniciar sesión." })
+  if (user.role !== "editor") throw createError({ statusCode: 403, statusMessage: "Esta acción es exclusiva para editores." })
+  return user
+}
+
+export function requireAuthenticatedUser(event: H3Event) {
+  const user = getSession(event)
+  if (!user) throw createError({ statusCode: 401, statusMessage: "Debes iniciar sesión." })
   return user
 }
 
