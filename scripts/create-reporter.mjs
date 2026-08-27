@@ -16,8 +16,8 @@ if (!process.env.NUXT_MONGODB_URI) {
 if (!nombre || !email || !password) {
   throw new Error('Uso: npm run reporter:create -- "Nombre" "correo@ejemplo.com" "contraseña-segura"')
 }
-if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 10) {
-  throw new Error("Usa un correo válido y una contraseña de al menos 10 caracteres.")
+if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 6) {
+  throw new Error("Usa un correo válido y una contraseña de al menos 6 caracteres.")
 }
 
 const salt = randomBytes(16).toString("hex")

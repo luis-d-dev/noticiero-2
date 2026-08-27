@@ -1,15 +1,19 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client"
+import { issueSignedToken } from "@vercel/blob"
+import { handleUploadPresigned, type HandleUploadPresignedBody } from "@vercel/blob/client"
 import { toWebRequest } from "h3"
+
+const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"]
+const tamanoMaximo = 10 * 1024 * 1024
 
 export default defineEventHandler(async (event) => {
   const request = toWebRequest(event)
-  const body = await request.clone().json() as HandleUploadBody
+  const body = await request.clone().json() as HandleUploadPresignedBody
 
   try {
-    return await handleUpload({
+    return await handleUploadPresigned({
       body,
       request,
-      onBeforeGenerateToken: async (pathname) => {
+      getSignedToken: async (pathname, clientPayload) => {
         assertSameOrigin(event)
         const reporter = requireReporter(event)
         if (!pathname.startsWith("noticias/")) {
@@ -17,14 +21,19 @@ export default defineEventHandler(async (event) => {
         }
 
         return {
-          allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
-          maximumSizeInBytes: 10 * 1024 * 1024,
-          addRandomSuffix: true,
-          tokenPayload: JSON.stringify({ reporterId: reporter.id })
+          token: await issueSignedToken({
+            pathname,
+            operations: ["put"],
+            allowedContentTypes: tiposPermitidos,
+            maximumSizeInBytes: tamanoMaximo
+          }),
+          urlOptions: {
+            allowedContentTypes: tiposPermitidos,
+            maximumSizeInBytes: tamanoMaximo,
+            addRandomSuffix: true,
+            tokenPayload: clientPayload || JSON.stringify({ reporterId: reporter.id })
+          }
         }
-      },
-      onUploadCompleted: async () => {
-        // La noticia se crea después de que upload() devuelve la URL al navegador.
       }
     })
   } catch (error) {

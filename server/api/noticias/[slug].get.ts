@@ -5,7 +5,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = await getDb()
-  const document = await db.collection("news").findOne({ slug, estado: "publicada" })
+  const document = await db.collection("news").findOne({
+    slug,
+    estado: "publicada",
+    contenido: { $type: "string", $ne: "" }
+  })
   if (!document) {
     throw createError({ statusCode: 404, statusMessage: "Noticia no encontrada." })
   }

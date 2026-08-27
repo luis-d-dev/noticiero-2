@@ -11,7 +11,7 @@
     "reporter:create": "node scripts/create-reporter.mjs"
   },
   "dependencies": {
-    "@vercel/blob": "^2.4.0",
+    "@vercel/blob": "^2.8.0",
     "mongodb": "^6.18.0",
     "nuxt": "^4.0.0"
   },

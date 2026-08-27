@@ -34,7 +34,7 @@ useSeoMeta({
             {{ new Intl.DateTimeFormat("es-CO", { dateStyle: "long" }).format(new Date(noticia.publicadaEn)) }}
           </time>
         </div>
-        <p v-for="(parrafo, indice) in noticia.contenido.split(/\n{2,}/)" :key="indice">{{ parrafo }}</p>
+        <p v-for="(parrafo, indice) in noticia.contenido?.split(/\n{2,}/)" :key="indice">{{ parrafo }}</p>
         <NuxtLink to="/" class="back-link">← Volver a todas las noticias</NuxtLink>
       </article>
     </main>

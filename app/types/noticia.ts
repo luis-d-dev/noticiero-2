@@ -3,7 +3,7 @@ export interface Noticia {
   titulo: string
   slug: string
   resumen: string
-  contenido: string
+  contenido?: string
   imagenUrl: string
   categoria: string
   autorNombre: string

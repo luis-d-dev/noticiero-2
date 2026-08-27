@@ -16,7 +16,9 @@ export function serializeNews(document: WithId<Document>) {
     titulo: document.titulo,
     slug: document.slug,
     resumen: document.resumen,
-    contenido: document.contenido,
+    contenido: typeof document.contenido === "string" && document.contenido.trim()
+      ? document.contenido
+      : undefined,
     imagenUrl: document.imagenUrl,
     categoria: document.categoria,
     autorNombre: document.autorNombre,

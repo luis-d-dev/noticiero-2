@@ -12,7 +12,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<NewsBody>(event)
   const titulo = requiredText(body.titulo, "El título", 5, 140)
   const resumen = requiredText(body.resumen, "El resumen", 10, 300)
-  const contenido = requiredText(body.contenido, "El contenido", 30, 20_000)
+  const contenidoVacio = body.contenido == null || (typeof body.contenido === "string" && !body.contenido.trim())
+  const contenido = contenidoVacio ? undefined : requiredText(body.contenido, "El contenido", 30, 20_000)
   const categoria = requiredText(body.categoria, "La categoría", 2, 40)
   const imagenUrl = requiredText(body.imagenUrl, "La imagen", 8, 2_000)
 
@@ -24,6 +25,12 @@ export default defineEventHandler(async (event) => {
   }
   if (image.protocol !== "https:") {
     throw createError({ statusCode: 400, statusMessage: "La imagen debe usar una URL HTTPS." })
+  }
+  if (!image.hostname.endsWith(".public.blob.vercel-storage.com")) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "La imagen debe pertenecer al almacén público de Vercel Blob."
+    })
   }
 
   const db = await getDb()
@@ -43,7 +50,7 @@ export default defineEventHandler(async (event) => {
     titulo,
     slug,
     resumen,
-    contenido,
+    ...(contenido ? { contenido } : {}),
     imagenUrl,
     categoria,
     autorId: reporter.id,
