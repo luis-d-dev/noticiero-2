@@ -61,6 +61,7 @@ export default defineEventHandler(async (event) => {
     creadaEn: now,
     actualizadaEn: now
   }
+console.table(document);
   const result = await collection.insertOne(document)
   setResponseStatus(event, 201)
   return serializeNews({ ...document, _id: result.insertedId })
