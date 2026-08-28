@@ -38,7 +38,7 @@ npm run reporter:create -- "Nombre Apellido" "reportero@ejemplo.com" "una-contra
 
 La contraseña debe tener al menos 6 caracteres.
 
-Después, el reportero ingresa en `/reporteros`. Las contraseñas se almacenan con `scrypt`; la sesión se guarda en una cookie `HttpOnly`, `SameSite=Strict` y firmada.
+Después, el reportero ingresa en `/ingresar`. Las contraseñas se almacenan con `scrypt`; la sesión se guarda en una cookie `HttpOnly`, `SameSite=Strict` y firmada.
 
 ## Crear editores
 
@@ -48,7 +48,13 @@ El administrador crea o actualiza editores con:
 npm run editor:create -- "Nombre Apellido" "editor@ejemplo.com" "una-contraseña-segura"
 ```
 
-Los editores ingresan en `/reporteros`, donde también pueden crear noticias, modificar su título, resumen y contenido, aprobarlas, retirar su aprobación o eliminarlas. Toda noticia nueva, incluso si la crea un editor, comienza sin aprobar y no es visible públicamente hasta que un editor la aprueba.
+Tras iniciar sesión en `/ingresar`, los reporteros publican noticias desde el panel `/panel`. Los editores revisan, corrigen, aprueban o eliminan las noticias en la sección exclusiva `/editorial`: pueden modificar su título, resumen y contenido, aprobarlas, retirar su aprobación o eliminarlas. Toda noticia nueva, incluso si la crea un editor, comienza sin aprobar y no es visible públicamente hasta que un editor la aprueba.
+
+## Páginas de perfil
+
+Cada usuario registrado (reportero o editor) tiene una página de perfil pública en `/usuarios/<id>`, donde se muestran su nombre, rol, biografía y foto de perfil, además de las noticias aprobadas que ha publicado. El identificador de cada perfil es el id único del usuario en MongoDB.
+
+Desde la página `/mi-perfil`, el usuario puede editar su biografía y subir una foto de perfil (máximo 5 MB, se sube al almacén público de Vercel Blob). El nombre del autor en cada noticia enlaza a su perfil cuando existe. El panel `/panel` solo se usa para publicar noticias y no está disponible antes de iniciar sesión.
 
 ## Desplegar en Vercel
 
@@ -70,4 +76,4 @@ Las imágenes nuevas se envían directamente del navegador a Vercel Blob usando 
 ## Colecciones de MongoDB
 
 - `news`: título, slug, resumen, contenido opcional, portada, categoría, autor, aprobación, estado y fechas. Sin contenido, la noticia funciona únicamente como portada y no tiene página de detalle. Solo los documentos con `aprobada: true` son públicos.
-- `users`: nombre, correo único, hash de contraseña, rol (`reporter` o `editor`), estado y fechas.
+- `users`: nombre, correo único, hash de contraseña, rol (`reporter` o `editor`), biografía, URL de foto, estado y fechas. La página de perfil usa el id del documento como identificador.

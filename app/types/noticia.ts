@@ -8,6 +8,7 @@ export interface Noticia {
   imagenUrl: string
   categoria: string
   autorNombre: string
+  autorSlug?: string
   publicadaEn: string
 }
 
@@ -15,5 +16,15 @@ export interface Reporter {
   id: string
   nombre: string
   email: string
+  slug: string
   role: "reporter" | "editor"
+}
+
+export interface Usuario {
+  id: string
+  nombre: string
+  slug: string
+  role: "reporter" | "editor"
+  bio: string
+  fotoUrl: string
 }

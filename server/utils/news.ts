@@ -23,6 +23,7 @@ export function serializeNews(document: WithId<Document>) {
     imagenUrl: document.imagenUrl,
     categoria: document.categoria,
     autorNombre: document.autorNombre,
+    autorSlug: typeof document.autorSlug === "string" && document.autorSlug ? document.autorSlug : "",
     publicadaEn: document.publicadaEn instanceof Date ? document.publicadaEn.toISOString() : document.publicadaEn
   }
 }

@@ -8,6 +8,7 @@ export interface SessionUser {
   id: string
   nombre: string
   email: string
+  slug: string
   role: "reporter" | "editor"
 }
 
@@ -56,7 +57,13 @@ export function getSession(event: H3Event): SessionUser | null {
 
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString()) as SessionPayload
     if (payload.exp <= Math.floor(Date.now() / 1000) || !["reporter", "editor"].includes(payload.role)) return null
-    return { id: payload.id, nombre: payload.nombre, email: payload.email, role: payload.role }
+    return {
+      id: payload.id,
+      nombre: payload.nombre,
+      email: payload.email,
+      slug: payload.id,
+      role: payload.role
+    }
   } catch {
     return null
   }

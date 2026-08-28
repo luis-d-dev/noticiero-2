@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
     id: user._id.toString(),
     nombre: String(user.nombre),
     email: String(user.email),
+    slug: user._id.toString(),
     role: user.role as "reporter" | "editor"
   }
   createSession(event, sessionUser)

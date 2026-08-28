@@ -20,7 +20,7 @@ const { data: noticias, status, error, refresh } = await useFetch<Noticia[]>("/a
         <template v-else>
           <h1>Aún no hay noticias publicadas</h1>
           <p>Los reporteros podrán publicar la primera desde su panel.</p>
-          <NuxtLink to="/reporteros" class="button">Ir al panel</NuxtLink>
+          <NuxtLink to="/ingresar" class="button">Acceder al panel</NuxtLink>
         </template>
       </section>
     </main>

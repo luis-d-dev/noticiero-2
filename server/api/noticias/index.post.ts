@@ -55,6 +55,7 @@ export default defineEventHandler(async (event) => {
     categoria,
     autorId: reporter.id,
     autorNombre: reporter.nombre,
+    autorSlug: reporter.slug,
     aprobada: false,
     estado: "publicada",
     publicadaEn: now,

@@ -19,5 +19,8 @@ export default defineNuxtConfig({
   },
   nitro: {
     preset: "vercel"
+  },
+  routeRules: {
+    "/reporteros": { redirect: "/panel" }
   }
 })

@@ -29,7 +29,10 @@ useSeoMeta({
       </header>
       <article class="article-body container">
         <div class="article-meta">
-          <span>Por {{ noticia.autorNombre }}</span>
+          <span>Por
+            <NuxtLink v-if="noticia.autorSlug" :to="`/usuarios/${noticia.autorSlug}`" class="author-link">{{ noticia.autorNombre }}</NuxtLink>
+            <template v-else>{{ noticia.autorNombre }}</template>
+          </span>
           <time :datetime="noticia.publicadaEn">
             {{ new Intl.DateTimeFormat("es-CO", { dateStyle: "long" }).format(new Date(noticia.publicadaEn)) }}
           </time>
