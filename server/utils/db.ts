@@ -25,16 +25,24 @@ export async function getDb(): Promise<Db> {
   const config = useRuntimeConfig()
   const mongodbUri = obtenerMongoUri(config.mongodbUri)
 
-  if (!cliente) {
+  let promesaConexion = conexion
+  if (!promesaConexion) {
     cliente = new MongoClient(mongodbUri, {
       maxPoolSize: 10,
       minPoolSize: 0,
       maxIdleTimeMS: 30_000,
       serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true }
     })
-    conexion = cliente.connect()
+    promesaConexion = cliente.connect()
+    conexion = promesaConexion
   }
 
-  const clienteConectado = await conexion
-  return clienteConectado.db(config.mongodbDb)
+  try {
+    const clienteConectado = await promesaConexion
+    return clienteConectado.db(config.mongodbDb)
+  } catch (error) {
+    cliente = undefined
+    conexion = undefined
+    throw error
+  }
 }

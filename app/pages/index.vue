@@ -15,7 +15,7 @@ const { data: noticias, status, error, refresh } = await useFetch<Noticia[]>("/a
         <template v-else-if="error">
           <h1>No pudimos cargar las noticias</h1>
           <p>Comprueba la conexión e inténtalo nuevamente.</p>
-          <button class="button" type="button" @click="refresh">Reintentar</button>
+          <button class="button" type="button" @click="refresh()">Reintentar</button>
         </template>
         <template v-else>
           <h1>Aún no hay noticias publicadas</h1>
