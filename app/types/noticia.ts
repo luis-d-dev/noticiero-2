@@ -3,7 +3,8 @@ export interface Noticia {
   titulo: string
   slug: string
   resumen: string
-  contenido: string
+  contenido?: string
+  aprobada: boolean
   imagenUrl: string
   categoria: string
   autorNombre: string
@@ -14,5 +15,5 @@ export interface Reporter {
   id: string
   nombre: string
   email: string
-  role: "reporter"
+  role: "reporter" | "editor"
 }

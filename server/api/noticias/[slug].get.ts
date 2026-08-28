@@ -5,11 +5,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = await getDb()
-  const document = await db.collection("news").findOne({ slug, estado: "publicada" })
+  const document = await db.collection("news").findOne({
+    slug,
+    estado: "publicada",
+    aprobada: true,
+    contenido: { $type: "string", $ne: "" }
+  })
   if (!document) {
     throw createError({ statusCode: 404, statusMessage: "Noticia no encontrada." })
   }
 
-  setResponseHeader(event, "Cache-Control", "public, s-maxage=60, stale-while-revalidate=300")
+  setResponseHeader(event, "Cache-Control", "public, max-age=0, must-revalidate")
   return serializeNews(document)
 })

@@ -1,11 +1,13 @@
 export default defineEventHandler(async (event) => {
+  requireEditor(event)
+
   const db = await getDb()
   const documents = await db.collection("news")
-    .find({ estado: "publicada", aprobada: true })
+    .find({ estado: "publicada" })
     .sort({ publicadaEn: -1 })
     .limit(100)
     .toArray()
 
-  setResponseHeader(event, "Cache-Control", "public, max-age=0, must-revalidate")
+  setResponseHeader(event, "Cache-Control", "private, no-store")
   return documents.map(serializeNews)
 })

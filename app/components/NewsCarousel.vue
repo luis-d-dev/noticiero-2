@@ -49,7 +49,7 @@ onBeforeUnmount(() => {
           <p class="news-label">Noticia</p>
           <h2>{{ noticia.titulo }}</h2>
           <p>{{ noticia.resumen }}</p>
-          <NuxtLink :to="`/noticias/${noticia.slug}`" class="button">Leer más</NuxtLink>
+          <NuxtLink v-if="noticia.contenido" :to="`/noticias/${noticia.slug}`" class="button">Leer más</NuxtLink>
         </div>
       </article>
     </div>

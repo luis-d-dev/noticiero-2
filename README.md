@@ -36,23 +36,36 @@ No existe registro público. El administrador crea o actualiza cada reportero de
 npm run reporter:create -- "Nombre Apellido" "reportero@ejemplo.com" "una-contraseña-segura"
 ```
 
+La contraseña debe tener al menos 6 caracteres.
+
 Después, el reportero ingresa en `/reporteros`. Las contraseñas se almacenan con `scrypt`; la sesión se guarda en una cookie `HttpOnly`, `SameSite=Strict` y firmada.
+
+## Crear editores
+
+El administrador crea o actualiza editores con:
+
+```bash
+npm run editor:create -- "Nombre Apellido" "editor@ejemplo.com" "una-contraseña-segura"
+```
+
+Los editores ingresan en `/reporteros`, donde pueden modificar el contenido, aprobar noticias o retirar su aprobación. Las noticias nuevas de los reporteros comienzan sin aprobar y no son visibles públicamente hasta que un editor las aprueba.
 
 ## Desplegar en Vercel
 
 1. Sube la carpeta `noticiero_2` a un repositorio o selecciónala como **Root Directory** del proyecto en Vercel.
 2. En MongoDB Atlas, crea el clúster, un usuario de base de datos y permite conexiones desde Vercel. Copia la cadena de conexión.
-3. En Vercel, crea un almacén Blob con acceso **Public** y conéctalo al proyecto. Vercel añadirá `BLOB_READ_WRITE_TOKEN`.
+3. En Vercel, crea un almacén Blob con acceso **Public** y conéctalo al proyecto mediante OIDC. Vercel añadirá los datos del almacén y suministrará credenciales OIDC de corta duración durante la ejecución.
 4. Añade estas variables en Production, Preview y Development:
    - `NUXT_MONGODB_URI`
    - `NUXT_MONGODB_DB`
    - `NUXT_SESSION_SECRET`
-   - `BLOB_READ_WRITE_TOKEN` (la integración Blob normalmente la crea)
+   - `BLOB_STORE_ID`
+   - `BLOB_WEBHOOK_PUBLIC_KEY`
 5. Despliega. Ejecuta localmente `npm run seed` y `npm run reporter:create -- ...` usando la misma URI de producción para cargar el contenido inicial y crear usuarios.
 
-Las imágenes nuevas se envían directamente del navegador a Vercel Blob y se limitan a JPG, PNG o WebP de hasta 10 MB. La API solo entrega tokens de subida a reporteros autenticados.
+Las imágenes nuevas se envían directamente del navegador a Vercel Blob usando explícitamente `access: "public"` y URLs de subida presignadas mediante OIDC; no requieren un `BLOB_READ_WRITE_TOKEN` permanente. Si una portada supera los 1800 px en cualquiera de sus lados o pesa más de 10 MB, el navegador reduce sus dimensiones y la convierte a WebP antes de subirla. La API mantiene un límite estricto de 10 MB y solo admite JPG, PNG o WebP. Solo entrega permisos de subida de corta duración a reporteros autenticados y, al crear una noticia, acepta únicamente URLs HTTPS del dominio público `*.public.blob.vercel-storage.com`. Las portadas se muestran directamente desde su URL pública.
 
 ## Colecciones de MongoDB
 
-- `news`: título, slug, resumen, contenido, portada, categoría, autor, estado y fechas.
-- `users`: nombre, correo único, hash de contraseña, rol, estado y fechas.
+- `news`: título, slug, resumen, contenido opcional, portada, categoría, autor, aprobación, estado y fechas. Sin contenido, la noticia funciona únicamente como portada y no tiene página de detalle. Solo los documentos con `aprobada: true` son públicos.
+- `users`: nombre, correo único, hash de contraseña, rol (`reporter` o `editor`), estado y fechas.

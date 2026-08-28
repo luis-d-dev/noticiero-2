@@ -14,7 +14,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = await getDb()
-  const user = await db.collection("users").findOne({ email, role: "reporter", active: { $ne: false } })
+  const user = await db.collection("users").findOne({
+    email,
+    role: { $in: ["reporter", "editor"] },
+    active: { $ne: false }
+  })
   const valid = user && typeof user.passwordHash === "string"
     ? await verifyPassword(password, user.passwordHash)
     : false
@@ -27,7 +31,7 @@ export default defineEventHandler(async (event) => {
     id: user._id.toString(),
     nombre: String(user.nombre),
     email: String(user.email),
-    role: "reporter" as const
+    role: user.role as "reporter" | "editor"
   }
   createSession(event, sessionUser)
   return { user: sessionUser }

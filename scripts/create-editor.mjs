@@ -10,11 +10,9 @@ const nombre = nombreArg?.trim()
 const email = emailArg?.trim().toLowerCase()
 const password = passwordArg
 
-if (!process.env.NUXT_MONGODB_URI) {
-  throw new Error("Falta NUXT_MONGODB_URI en .env.")
-}
+if (!process.env.NUXT_MONGODB_URI) throw new Error("Falta NUXT_MONGODB_URI en .env.")
 if (!nombre || !email || !password) {
-  throw new Error('Uso: npm run reporter:create -- "Nombre" "correo@ejemplo.com" "contraseña-segura"')
+  throw new Error('Uso: npm run editor:create -- "Nombre" "correo@ejemplo.com" "contraseña-segura"')
 }
 if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 6) {
   throw new Error("Usa un correo válido y una contraseña de al menos 6 caracteres.")
@@ -32,10 +30,10 @@ try {
   const now = new Date()
   await users.updateOne(
     { email },
-    { $set: { nombre, email, passwordHash, role: "reporter", active: true, actualizadaEn: now }, $setOnInsert: { creadaEn: now } },
+    { $set: { nombre, email, passwordHash, role: "editor", active: true, actualizadaEn: now }, $setOnInsert: { creadaEn: now } },
     { upsert: true }
   )
-  console.log(`Reportero creado o actualizado: ${email}`)
+  console.log(`Editor creado o actualizado: ${email}`)
 } finally {
   await client.close()
 }
