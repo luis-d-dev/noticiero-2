@@ -48,7 +48,7 @@ El administrador crea o actualiza editores con:
 npm run editor:create -- "Nombre Apellido" "editor@ejemplo.com" "una-contraseña-segura"
 ```
 
-Los editores ingresan en `/reporteros`, donde también pueden crear noticias, modificar el contenido, aprobar noticias o retirar su aprobación. Toda noticia nueva, incluso si la crea un editor, comienza sin aprobar y no es visible públicamente hasta que un editor la aprueba.
+Los editores ingresan en `/reporteros`, donde también pueden crear noticias, modificar su título, resumen y contenido, aprobarlas, retirar su aprobación o eliminarlas. Toda noticia nueva, incluso si la crea un editor, comienza sin aprobar y no es visible públicamente hasta que un editor la aprueba.
 
 ## Desplegar en Vercel
 

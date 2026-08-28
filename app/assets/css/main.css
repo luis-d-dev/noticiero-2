@@ -100,7 +100,9 @@ small { color: var(--muted); font-weight: 400; }
 .editor-card__heading img { width: 180px; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 12px; }
 .approval-field { display: flex; align-items: center; gap: 10px; }
 .approval-field input { width: 20px; height: 20px; }
-.editor-card .button { justify-self: start; }
+.editor-card__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.button--danger { border-color: #b42318; color: #fff; background: #b42318; }
+.button--danger:hover { background: #8f1d15; }
 
 @media (max-width: 720px) {
   .site-header { height: 88px; }

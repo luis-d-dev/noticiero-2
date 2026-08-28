@@ -1,4 +1,6 @@
 interface EditorialBody {
+  titulo?: unknown
+  resumen?: unknown
   contenido?: unknown
   aprobada?: unknown
 }
@@ -12,6 +14,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<EditorialBody>(event)
+  const titulo = requiredText(body.titulo, "El título", 5, 140)
+  const resumen = requiredText(body.resumen, "El resumen", 10, 300)
   if (typeof body.aprobada !== "boolean") {
     throw createError({ statusCode: 400, statusMessage: "El estado de aprobación no es válido." })
   }
@@ -21,6 +25,8 @@ export default defineEventHandler(async (event) => {
   const now = new Date()
   const db = await getDb()
   const cambios = {
+    titulo,
+    resumen,
     aprobada: body.aprobada,
     actualizadaEn: now,
     editadaPorId: editor.id,
