@@ -145,6 +145,7 @@ async function publicar() {
     exitoMensaje.value = resultadoPortada.optimizada
       ? "La portada fue optimizada y la noticia se envió para aprobación editorial."
       : "La noticia se envió para aprobación editorial."
+    if (reporter.value?.role === "editor") await cargarNoticiasEditoriales()
     Object.assign(formulario, { titulo: "", resumen: "", contenido: "", categoria: "Comunidad" })
     portada.value = null
     const input = document.querySelector<HTMLInputElement>("#portada")
@@ -163,10 +164,32 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
   try {
     const actualizada = await $fetch<Noticia>(`/api/editor/noticias/${noticia.slug}`, {
       method: "PATCH",
-      body: { contenido: noticia.contenido, aprobada: noticia.aprobada }
+      body: {
+        titulo: noticia.titulo,
+        resumen: noticia.resumen,
+        contenido: noticia.contenido,
+        aprobada: noticia.aprobada
+      }
     })
     Object.assign(noticia, actualizada, { contenido: actualizada.contenido || "" })
     exitoMensaje.value = `Se guardaron los cambios de “${noticia.titulo}”.`
+  } catch (error) {
+    errorMensaje.value = mensajeDeError(error)
+  } finally {
+    enviando.value = false
+  }
+}
+
+async function eliminarNoticia(noticia: Noticia) {
+  if (!window.confirm(`¿Eliminar definitivamente “${noticia.titulo}”? Esta acción no se puede deshacer.`)) return
+
+  enviando.value = true
+  errorMensaje.value = ""
+  exitoMensaje.value = ""
+  try {
+    await $fetch(`/api/editor/noticias/${noticia.slug}`, { method: "DELETE" })
+    noticiasEditoriales.value = noticiasEditoriales.value.filter(item => item.slug !== noticia.slug)
+    exitoMensaje.value = `Se eliminó “${noticia.titulo}”.`
   } catch (error) {
     errorMensaje.value = mensajeDeError(error)
   } finally {
@@ -201,7 +224,8 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
         </form>
       </section>
 
-      <section v-else-if="reporter.role === 'reporter'" class="publisher">
+      <template v-else>
+      <section class="publisher">
         <header class="publisher__header">
           <div>
             <p class="eyebrow">Panel de publicación</p>
@@ -242,14 +266,13 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
         </form>
       </section>
 
-      <section v-else class="publisher editor-panel">
+      <section v-if="reporter.role === 'editor'" class="publisher editor-panel">
         <header class="publisher__header">
           <div>
             <p class="eyebrow">Panel editorial</p>
             <h1>Revisión de noticias</h1>
             <p>Hola, {{ reporter.nombre }}. Revisa el contenido antes de aprobarlo.</p>
           </div>
-          <button class="text-button" type="button" @click="salir">Cerrar sesión</button>
         </header>
 
         <p v-if="errorMensaje" class="form-message form-message--error" role="alert">{{ errorMensaje }}</p>
@@ -260,11 +283,17 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
           <div class="editor-card__heading">
             <div>
               <p class="eyebrow">{{ noticia.categoria }} · {{ noticia.autorNombre }}</p>
-              <h2>{{ noticia.titulo }}</h2>
-              <p>{{ noticia.resumen }}</p>
+              <label>
+                Título
+                <input v-model.trim="noticia.titulo" type="text" minlength="5" maxlength="140" required>
+              </label>
             </div>
             <img :src="noticia.imagenUrl" :alt="`Portada de ${noticia.titulo}`">
           </div>
+          <label>
+            Resumen
+            <textarea v-model.trim="noticia.resumen" rows="3" minlength="10" maxlength="300" required></textarea>
+          </label>
           <label>
             Contenido (opcional)
             <textarea v-model.trim="noticia.contenido" rows="8" minlength="30" maxlength="20000"></textarea>
@@ -273,11 +302,17 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
             <input v-model="noticia.aprobada" type="checkbox">
             Aprobada y visible públicamente
           </label>
-          <button class="button" type="button" :disabled="enviando" @click="guardarEdicion(noticia)">
-            {{ enviando ? "Guardando…" : "Guardar revisión" }}
-          </button>
+          <div class="editor-card__actions">
+            <button class="button" type="button" :disabled="enviando" @click="guardarEdicion(noticia)">
+              {{ enviando ? "Procesando…" : "Guardar revisión" }}
+            </button>
+            <button class="button button--danger" type="button" :disabled="enviando" @click="eliminarNoticia(noticia)">
+              Eliminar noticia
+            </button>
+          </div>
         </article>
       </section>
+      </template>
     </main>
   </div>
 </template>
