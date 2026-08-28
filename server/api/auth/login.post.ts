@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
     role: { $in: ["reporter", "editor"] },
     active: { $ne: false }
   })
+console.log(`Encontrado ${user.nombre}`);
   const valid = user && typeof user.passwordHash === "string"
     ? await verifyPassword(password, user.passwordHash)
     : false
