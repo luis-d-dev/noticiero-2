@@ -145,6 +145,7 @@ async function publicar() {
     exitoMensaje.value = resultadoPortada.optimizada
       ? "La portada fue optimizada y la noticia se envió para aprobación editorial."
       : "La noticia se envió para aprobación editorial."
+    if (reporter.value?.role === "editor") await cargarNoticiasEditoriales()
     Object.assign(formulario, { titulo: "", resumen: "", contenido: "", categoria: "Comunidad" })
     portada.value = null
     const input = document.querySelector<HTMLInputElement>("#portada")
@@ -201,7 +202,8 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
         </form>
       </section>
 
-      <section v-else-if="reporter.role === 'reporter'" class="publisher">
+      <template v-else>
+      <section class="publisher">
         <header class="publisher__header">
           <div>
             <p class="eyebrow">Panel de publicación</p>
@@ -242,14 +244,13 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
         </form>
       </section>
 
-      <section v-else class="publisher editor-panel">
+      <section v-if="reporter.role === 'editor'" class="publisher editor-panel">
         <header class="publisher__header">
           <div>
             <p class="eyebrow">Panel editorial</p>
             <h1>Revisión de noticias</h1>
             <p>Hola, {{ reporter.nombre }}. Revisa el contenido antes de aprobarlo.</p>
           </div>
-          <button class="text-button" type="button" @click="salir">Cerrar sesión</button>
         </header>
 
         <p v-if="errorMensaje" class="form-message form-message--error" role="alert">{{ errorMensaje }}</p>
@@ -278,6 +279,7 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
           </button>
         </article>
       </section>
+      </template>
     </main>
   </div>
 </template>

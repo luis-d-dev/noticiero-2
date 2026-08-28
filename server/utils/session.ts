@@ -65,7 +65,9 @@ export function getSession(event: H3Event): SessionUser | null {
 export function requireReporter(event: H3Event) {
   const user = getSession(event)
   if (!user) throw createError({ statusCode: 401, statusMessage: "Debes iniciar sesión." })
-  if (user.role !== "reporter") throw createError({ statusCode: 403, statusMessage: "Esta acción es exclusiva para reporteros." })
+  if (!["reporter", "editor"].includes(user.role)) {
+    throw createError({ statusCode: 403, statusMessage: "Esta acción requiere permisos de publicación." })
+  }
   return user
 }
 
