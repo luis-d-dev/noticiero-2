@@ -90,6 +90,7 @@ small { color: var(--muted); font-weight: 400; }
 .form-message--error { color: #8a241c; background: #fff0ed; }
 .form-message--success { color: #166534; background: #ecfdf3; }
 .editor-panel { max-width: 1000px; }
+.publisher + .editor-panel { margin-top: 32px; }
 .editor-panel > .form-message { margin-bottom: 20px; }
 .editor-empty { color: var(--muted); text-align: center; }
 .editor-card { display: grid; gap: 22px; padding: 26px 0; border-top: 1px solid var(--line); }

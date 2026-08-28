@@ -48,7 +48,7 @@ El administrador crea o actualiza editores con:
 npm run editor:create -- "Nombre Apellido" "editor@ejemplo.com" "una-contraseña-segura"
 ```
 
-Los editores ingresan en `/reporteros`, donde pueden modificar el contenido, aprobar noticias o retirar su aprobación. Las noticias nuevas de los reporteros comienzan sin aprobar y no son visibles públicamente hasta que un editor las aprueba.
+Los editores ingresan en `/reporteros`, donde también pueden crear noticias, modificar el contenido, aprobar noticias o retirar su aprobación. Toda noticia nueva, incluso si la crea un editor, comienza sin aprobar y no es visible públicamente hasta que un editor la aprueba.
 
 ## Desplegar en Vercel
 
@@ -62,6 +62,8 @@ Los editores ingresan en `/reporteros`, donde pueden modificar el contenido, apr
    - `BLOB_STORE_ID`
    - `BLOB_WEBHOOK_PUBLIC_KEY`
 5. Despliega. Ejecuta localmente `npm run seed` y `npm run reporter:create -- ...` usando la misma URI de producción para cargar el contenido inicial y crear usuarios.
+
+Cada variable de Vercel debe crearse como una entrada independiente. En particular, el valor de `NUXT_MONGODB_URI` debe contener solamente la URI, sin comillas, por ejemplo `mongodb+srv://.../?retryWrites=true&w=majority`. Si se importan variables desde un archivo `.env`, debe haber un salto de línea entre `NUXT_MONGODB_URI` y la siguiente variable. Después de corregir una variable, es necesario volver a desplegar para que la función use el valor nuevo.
 
 Las imágenes nuevas se envían directamente del navegador a Vercel Blob usando explícitamente `access: "public"` y URLs de subida presignadas mediante OIDC; no requieren un `BLOB_READ_WRITE_TOKEN` permanente. Si una portada supera los 1800 px en cualquiera de sus lados o pesa más de 10 MB, el navegador reduce sus dimensiones y la convierte a WebP antes de subirla. La API mantiene un límite estricto de 10 MB y solo admite JPG, PNG o WebP. Solo entrega permisos de subida de corta duración a reporteros autenticados y, al crear una noticia, acepta únicamente URLs HTTPS del dominio público `*.public.blob.vercel-storage.com`. Las portadas se muestran directamente desde su URL pública.
 
