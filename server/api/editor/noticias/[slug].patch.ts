@@ -2,6 +2,7 @@ interface EditorialBody {
   titulo?: unknown
   resumen?: unknown
   contenido?: unknown
+  enlaces?: unknown
   aprobada?: unknown
 }
 
@@ -22,6 +23,7 @@ export default defineEventHandler(async (event) => {
 
   const contenidoVacio = body.contenido == null || (typeof body.contenido === "string" && !body.contenido.trim())
   const contenido = contenidoVacio ? undefined : requiredText(body.contenido, "El contenido", 30, 20_000)
+  const enlaces = validateEnlaces(body.enlaces)
   const now = new Date()
   const db = await getDb()
   const cambios = {
@@ -32,16 +34,18 @@ export default defineEventHandler(async (event) => {
     editadaPorId: editor.id,
     editadaPorNombre: editor.nombre,
     ...(contenido ? { contenido } : {}),
+    ...(enlaces?.length ? { enlaces } : {}),
     ...(body.aprobada ? { aprobadaEn: now, aprobadaPorId: editor.id } : {})
   }
   const result = await db.collection("news").findOneAndUpdate(
     { slug, estado: "publicada" },
     {
       $set: cambios,
-      ...(!contenido || !body.aprobada
+      ...(!contenido || !body.aprobada || !enlaces?.length
         ? { $unset: {
             ...(!contenido ? { contenido: "" } : {}),
-            ...(!body.aprobada ? { aprobadaEn: "", aprobadaPorId: "" } : {})
+            ...(!body.aprobada ? { aprobadaEn: "", aprobadaPorId: "" } : {}),
+            ...(!enlaces?.length ? { enlaces: "" } : {})
           } }
         : {})
     },

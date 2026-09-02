@@ -10,6 +10,7 @@ const noticias = [
     slug: "el-cable-inesperado",
     resumen: "Un arborista despistado se encontraba podando una enorme planta de veranera sin saber lo que se escondía entre las ramas…",
     contenido: "Un arborista despistado se encontraba podando una enorme planta de veranera sin saber lo que se escondía entre las ramas…",
+    enlaces: [{ nombre: "Cómo podar plantas trepadoras", url: "https://example.com/podar" }],
     imagenUrl: "/images/noticias/el-cable-inesperado.jpg"
   },
   {

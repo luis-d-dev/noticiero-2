@@ -2,6 +2,7 @@ interface NewsBody {
   titulo?: unknown
   resumen?: unknown
   contenido?: unknown
+  enlaces?: unknown
   categoria?: unknown
   imagenUrl?: unknown
 }
@@ -15,6 +16,7 @@ export default defineEventHandler(async (event) => {
   const contenidoVacio = body.contenido == null || (typeof body.contenido === "string" && !body.contenido.trim())
   const contenido = contenidoVacio ? undefined : requiredText(body.contenido, "El contenido", 30, 20_000)
   const categoria = requiredText(body.categoria, "La categoría", 2, 40)
+  const enlaces = validateEnlaces(body.enlaces)
   const imagenUrl = requiredText(body.imagenUrl, "La imagen", 8, 2_000)
 
   let image: URL
@@ -51,6 +53,7 @@ export default defineEventHandler(async (event) => {
     slug,
     resumen,
     ...(contenido ? { contenido } : {}),
+    ...(enlaces?.length ? { enlaces } : {}),
     imagenUrl,
     categoria,
     autorId: reporter.id,

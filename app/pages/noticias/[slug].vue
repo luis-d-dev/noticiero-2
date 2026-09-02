@@ -37,6 +37,14 @@ useSeoMeta({
             {{ new Intl.DateTimeFormat("es-CO", { dateStyle: "long" }).format(new Date(noticia.publicadaEn)) }}
           </time>
         </div>
+        <div v-if="noticia.enlaces?.length" class="article-links">
+          <h2>Enlaces relacionados</h2>
+          <ul>
+            <li v-for="(enlace, i) in noticia.enlaces" :key="i">
+              <a :href="enlace.url" target="_blank" rel="noopener noreferrer">{{ enlace.nombre }}</a>
+            </li>
+          </ul>
+        </div>
         <p v-for="(parrafo, indice) in noticia.contenido?.split(/\n{2,}/)" :key="indice">{{ parrafo }}</p>
         <NuxtLink to="/" class="back-link">← Volver a todas las noticias</NuxtLink>
       </article>

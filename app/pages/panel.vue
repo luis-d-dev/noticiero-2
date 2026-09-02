@@ -3,6 +3,7 @@ import { uploadPresigned } from "@vercel/blob/client"
 
 const { reporter, comprobado, comprobar, salir } = useReporter()
 const formulario = reactive({ titulo: "", resumen: "", contenido: "", categoria: "Comunidad" })
+const enlaces = ref<Array<{ nombre: string; url: string }>>([])
 const portada = ref<File | null>(null)
 const enviando = ref(false)
 const errorMensaje = ref("")
@@ -113,13 +114,14 @@ async function publicar() {
 
     await $fetch<{ slug: string }>("/api/noticias", {
       method: "POST",
-      body: { ...formulario, imagenUrl: blob.url }
+      body: { ...formulario, imagenUrl: blob.url, enlaces: enlaces.value.length ? enlaces.value : undefined }
     })
 
     exitoMensaje.value = resultadoPortada.optimizada
       ? "La portada fue optimizada y la noticia se envió para aprobación editorial."
       : "La noticia se envió para aprobación editorial."
     Object.assign(formulario, { titulo: "", resumen: "", contenido: "", categoria: "Comunidad" })
+    enlaces.value = []
     portada.value = null
     const input = document.querySelector<HTMLInputElement>("#portada")
     if (input) input.value = ""
@@ -170,6 +172,16 @@ async function publicar() {
             <textarea v-model.trim="formulario.contenido" rows="12" minlength="30" maxlength="20000"></textarea>
             <small>Si lo dejas vacío, se publicará únicamente la portada y no habrá una página de ampliación.</small>
           </label>
+          <fieldset class="field-wide enlaces-field">
+            <legend>Enlaces relacionados (opcional)</legend>
+            <p class="enlaces-hint">Agrega enlaces para que los lectores encuentren contenido relacionado.</p>
+            <div v-for="(enlace, i) in enlaces" :key="i" class="enlace-row">
+              <input v-model.trim="enlace.nombre" type="text" placeholder="Nombre del enlace" maxlength="200">
+              <input v-model.trim="enlace.url" type="url" placeholder="https://…" maxlength="2000">
+              <button type="button" class="text-button text-button--danger" @click="enlaces.splice(i, 1)">Quitar</button>
+            </div>
+            <button type="button" class="text-button" @click="enlaces.push({ nombre: '', url: '' })">+ Agregar enlace</button>
+          </fieldset>
           <p v-if="errorMensaje" class="form-message form-message--error field-wide" role="alert">{{ errorMensaje }}</p>
           <p v-if="exitoMensaje" class="form-message form-message--success field-wide" role="status">{{ exitoMensaje }}</p>
           <button class="button field-wide" type="submit" :disabled="enviando">

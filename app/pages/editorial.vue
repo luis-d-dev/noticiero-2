@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Noticia } from "~/types/noticia"
+import type { Enlace, Noticia } from "~/types/noticia"
 
 const { reporter, comprobado, comprobar } = useReporter()
-const noticiasEditoriales = ref<Array<Noticia & { contenido: string }>>([])
+const noticiasEditoriales = ref<Array<Noticia & { contenido: string; enlaces: Enlace[] }>>([])
 const enviando = ref(false)
 const errorMensaje = ref("")
 const exitoMensaje = ref("")
@@ -32,13 +32,17 @@ function mensajeDeError(error: unknown) {
 async function cargarNoticiasEditoriales() {
   try {
     const noticias = await $fetch<Noticia[]>("/api/editor/noticias")
-    noticiasEditoriales.value = noticias.map(noticia => ({ ...noticia, contenido: noticia.contenido || "" }))
+    noticiasEditoriales.value = noticias.map(noticia => ({
+      ...noticia,
+      contenido: noticia.contenido || "",
+      enlaces: noticia.enlaces ? noticia.enlaces.map(enlace => ({ ...enlace })) : []
+    }))
   } catch (error) {
     errorMensaje.value = mensajeDeError(error)
   }
 }
 
-async function guardarEdicion(noticia: Noticia & { contenido: string }) {
+async function guardarEdicion(noticia: Noticia & { contenido: string; enlaces: Enlace[] }) {
   enviando.value = true
   errorMensaje.value = ""
   exitoMensaje.value = ""
@@ -49,10 +53,11 @@ async function guardarEdicion(noticia: Noticia & { contenido: string }) {
         titulo: noticia.titulo,
         resumen: noticia.resumen,
         contenido: noticia.contenido,
+        enlaces: noticia.enlaces?.length ? noticia.enlaces : undefined,
         aprobada: noticia.aprobada
       }
     })
-    Object.assign(noticia, actualizada, { contenido: actualizada.contenido || "" })
+    Object.assign(noticia, actualizada, { contenido: actualizada.contenido || "", enlaces: actualizada.enlaces || [] })
     exitoMensaje.value = `Se guardaron los cambios de “${noticia.titulo}”.`
   } catch (error) {
     errorMensaje.value = mensajeDeError(error)
@@ -117,6 +122,15 @@ async function eliminarNoticia(noticia: Noticia) {
             Contenido (opcional)
             <textarea v-model.trim="noticia.contenido" rows="8" minlength="30" maxlength="20000"></textarea>
           </label>
+          <fieldset class="field-wide enlaces-field">
+            <legend>Enlaces relacionados</legend>
+            <div v-for="(enlace, i) in noticia.enlaces" :key="i" class="enlace-row">
+              <input v-model.trim="enlace.nombre" type="text" placeholder="Nombre del enlace" maxlength="200">
+              <input v-model.trim="enlace.url" type="url" placeholder="https://…" maxlength="2000">
+              <button type="button" class="text-button text-button--danger" @click="noticia.enlaces.splice(i, 1)">Quitar</button>
+            </div>
+            <button type="button" class="text-button" @click="noticia.enlaces.push({ nombre: '', url: '' })">+ Agregar enlace</button>
+          </fieldset>
           <label class="approval-field">
             <input v-model="noticia.aprobada" type="checkbox">
             Aprobada y visible públicamente

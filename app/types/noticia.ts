@@ -1,9 +1,15 @@
+export interface Enlace {
+  nombre: string
+  url: string
+}
+
 export interface Noticia {
   _id: string
   titulo: string
   slug: string
   resumen: string
   contenido?: string
+  enlaces?: Enlace[]
   aprobada: boolean
   imagenUrl: string
   categoria: string

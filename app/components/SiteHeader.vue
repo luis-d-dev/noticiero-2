@@ -24,7 +24,6 @@ function alternarMenu() {
       </NuxtLink>
       <nav aria-label="Navegación principal">
         <NuxtLink to="/">Inicio</NuxtLink>
-        <a href="/#noticias">Noticias</a>
       </nav>
 
       <div v-if="comprobado" class="session-area">
